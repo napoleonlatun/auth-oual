@@ -64,23 +64,33 @@
         <!-- 3. THE FEED (The Output) -->
         <!-- Only shows if there are posts -->
         <div class="w-[500px] space-y-4 z-10">
-            @foreach($posts as $post)
-                <div class="glass p-5 rounded-xl border-l-2 border-l-emerald-500/50 hover:border-l-emerald-400 transition-all">
-                    <div class="flex justify-between items-start mb-2">
-                        <!-- The Relationship: $post->user->name -->
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                            // {{ $post->user->name }}
-                        </span>
-                        <span class="text-[10px] text-gray-600">
-                            {{ $post->created_at->diffForHumans() }}
-                        </span>
-                    </div>
-                    <p class="text-sm text-gray-200 leading-relaxed">
-                        {{ $post->content }}
-                    </p>
-                </div>
-            @endforeach
+            <div class="w-[500px] space-y-4 z-10">
+    @foreach($posts as $post)
+        <div class="glass p-5 rounded-xl border-l-2 border-l-emerald-500/50 hover:border-l-emerald-400 transition-all relative group">
+            
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    // {{ $post->user->name }}
+                </span>
+                
+                <!-- DELETE BUTTON (Only shows for the owner) -->
+                @if(auth()->id() === $post->user_id)
+                    <form action="/post/{{ $post->id }}" method="POST">
+                        @csrf
+                        @method('DELETE') <!-- MUST KNOW: Turns a POST into a DELETE -->
+                        <button class="text-gray-600 hover:text-red-500 transition text-[10px] uppercase font-bold">
+                            [ DELETE ]
+                        </button>
+                    </form>
+                @endif
+            </div>
+
+            <p class="text-sm text-gray-200 leading-relaxed">
+                {{ $post->content }}
+            </p>
         </div>
+    @endforeach
+</div>
     @endauth
 
     <!-- GUEST LOGIN PANEL -->
