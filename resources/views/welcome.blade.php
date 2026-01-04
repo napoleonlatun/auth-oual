@@ -74,7 +74,7 @@
                 </span>
                 
                 <!-- DELETE BUTTON (Only shows for the owner) -->
-                @if(auth()->id() === $post->user_id)
+                
                     <form action="/post/{{ $post->id }}" method="POST">
                         @csrf
                         @method('DELETE') <!-- MUST KNOW: Turns a POST into a DELETE -->
@@ -82,7 +82,7 @@
                             [ DELETE ]
                         </button>
                     </form>
-                @endif
+                
             </div>
 
             <p class="text-sm text-gray-200 leading-relaxed">
