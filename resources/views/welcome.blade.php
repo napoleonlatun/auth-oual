@@ -30,7 +30,7 @@
 
     <!-- LOGGED IN DASHBOARD -->
     @auth
-        <!-- 1. The User Control Panel -->
+        <!-- Control panel -->
         <div class="glass z-10 p-8 rounded-2xl w-[500px] text-center shadow-2xl relative mb-8">
             <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                 <div class="text-left">
@@ -46,12 +46,12 @@
                 </form>
             </div>
 
-            <!-- 2. THE POST FORM (The Input) -->
+            <!-- Post form -->
             <form action="/create-post" method="POST" class="text-left">
                 @csrf
                 <label class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 block">New Transmission</label>
                 <div class="relative">
-                    <textarea name="content" rows="2" required placeholder="Type command..." 
+                    <textarea name="content" rows="2" required placeholder="Type command..."
                         class="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm text-gray-300 focus:outline-none focus:border-white/30 transition resize-none"></textarea>
                     
                     <button class="absolute bottom-3 right-3 text-[10px] bg-white text-black px-3 py-1 rounded font-bold uppercase hover:bg-gray-200 transition">
@@ -61,45 +61,75 @@
             </form>
         </div>
 
-        <!-- 3. THE FEED (The Output) -->
-        <!-- Only shows if there are posts -->
+        <!-- FEED -->
         <div class="w-[500px] space-y-4 z-10">
-            <div class="w-[500px] space-y-4 z-10">
-    @foreach($posts as $post)
-        <div class="glass p-5 rounded-xl border-l-2 border-l-emerald-500/50 hover:border-l-emerald-400 transition-all relative group">
-            
-            <div class="flex justify-between items-start mb-2">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    // {{ $post->user->name }}
-                </span>
-                
-                <!-- DELETE BUTTON (Only shows for the owner) -->
-                
-                    <form action="/post/{{ $post->id }}" method="POST">
-                        @csrf
-                        @method('DELETE') <!-- MUST KNOW: Turns a POST into a DELETE -->
-                        <button class="text-gray-600 hover:text-red-500 transition text-[10px] uppercase font-bold">
-                            [ DELETE ]
-                        </button>
-                    </form>
-                
-            </div>
+            @foreach($posts as $post)
+                <div class="glass p-5 rounded-xl border-l-2 border-l-emerald-500/50 hover:border-l-emerald-400 transition-all relative group">
+                    
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            // {{ optional($post->user)->name ?? 'Unknown user' }}
+                        </span>
 
-            <p class="text-sm text-gray-200 leading-relaxed">
-                {{ $post->content }}
-            </p>
+                        <!-- DELETE BUTTON (only owner) -->
+                        @if(auth()->id() === $post->user_id)
+                            <form action="/post/{{ $post->id }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-gray-600 hover:text-red-500 transition text-[10px] uppercase font-bold">
+                                    [ DELETE ]
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    <p class="text-sm text-gray-200 leading-relaxed">
+                        {{ $post->content }}
+                    </p>
+
+                    <span class="text-[10px] text-gray-600">
+                        {{ $post->created_at->diffForHumans() }}
+                    </span>
+                </div>
+            @endforeach
         </div>
-    @endforeach
-</div>
     @endauth
+<div class="flex items-center gap-3">
+    <!-- 1. The User Name -->
+    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+        // {{ optional($post->user)->name ?? 'Unknown' }}
+    </span>
 
-    <!-- GUEST LOGIN PANEL -->
+    <!-- 2. The Follow/Unfollow Logic -->
+    @if(auth()->id() !== $post->user_id) <!-- Don't show button for yourself -->
+        
+        @if(auth()->user()->isFollowing($post->user))
+            <!-- UNFOLLOW BUTTON -->
+            <form action="/unfollow/{{ $post->user->id }}" method="POST">
+                @csrf
+                <button type="submit" class="text-[10px] text-red-400 hover:text-red-300 uppercase font-bold tracking-wider border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/10 transition">
+                    [ Unfollow ]
+                </button>
+            </form>
+        @else
+            <!-- FOLLOW BUTTON -->
+            <form action="/follow/{{ $post->user->id }}" method="POST">
+                @csrf
+                <button type="submit" class="text-[10px] text-emerald-400 hover:text-emerald-300 uppercase font-bold tracking-wider border border-emerald-500/30 px-2 py-0.5 rounded hover:bg-emerald-500/10 transition">
+                    [ Follow ]
+                </button>
+            </form>
+        @endif
+
+    @endif
+</div>
+    <!-- GUEST PANEL -->
     @guest
         <div class="glass z-10 p-10 rounded-2xl w-[450px] text-center shadow-2xl relative">
             <h2 class="text-xl text-white tracking-tight mb-2">Access Restricted FOR OUAL FAM</h2>
             <p class="text-xs text-gray-500 mb-8">Authentication credentials required To Access The Fam Oual.</p>
             <div class="flex flex-col space-y-3">
-                <a href="/login" class="w-full py-3 bg-white text-black text-xs font-bold uppercase tracking-widest rounded hover:bg-gray-20 transition">Initialize Login</a>
+                <a href="/login" class="w-full py-3 bg-white text-black text-xs font-bold uppercase tracking-widest rounded hover:bg-gray-200 transition">Initialize Login</a>
                 <a href="/register" class="w-full py-3 border border-white/10 text-gray-400 text-xs font-bold uppercase tracking-widest rounded hover:text-white hover:border-white/40 transition">Create Identity</a>
             </div>
         </div>

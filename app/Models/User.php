@@ -49,4 +49,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(post::class);
     }
+    // 1. Who am I following? (The Stars)
+    public function following() {
+        return $this->belongsToMany(User::class, 'followers', 'user_id', 'following_id');
+    }
+
+    // 2. Who follows me? (The Fans)
+    public function followers() {
+        return $this->belongsToMany(User::class, 'followers', 'following_id', 'user_id');
+    }
+
+    // Helper: Check if I already follow someone
+    public function isFollowing(User $user) {
+        return $this->following()->where('following_id', $user->id)->exists();
+    }
 }
