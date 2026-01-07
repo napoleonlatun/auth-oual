@@ -64,65 +64,56 @@
         <!-- FEED -->
         <div class="w-[500px] space-y-4 z-10">
             @foreach($posts as $post)
-                <div class="glass p-5 rounded-xl border-l-2 border-l-emerald-500/50 hover:border-l-emerald-400 transition-all relative group">
-                    
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                            // {{ optional($post->user)->name ?? 'Unknown user' }}
-                        </span>
+    <div class="glass p-5 rounded-xl ...">
+        <div class="flex justify-between items-start mb-2">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    // {{ optional($post->user)->name ?? 'Unknown' }}
+                </span>
 
-                        <!-- DELETE BUTTON (only owner) -->
-                        @if(auth()->id() === $post->user_id)
-                            <form action="/post/{{ $post->id }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-gray-600 hover:text-red-500 transition text-[10px] uppercase font-bold">
-                                    [ DELETE ]
-                                </button>
-                            </form>
-                        @endif
-                    </div>
+                @if(auth()->check() && $post->user && auth()->id() !== $post->user_id)
+                    @if(auth()->user()->isFollowing($post->user))
+                        <form action="/unfollow/{{ $post->user->id }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                class="text-[10px] text-red-400 hover:text-red-300 uppercase font-bold tracking-wider border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/10 transition">
+                                [ Unfollow ]
+                            </button>
+                        </form>
+                    @else
+                        <form action="/follow/{{ $post->user->id }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                class="text-[10px] text-emerald-400 hover:text-emerald-300 uppercase font-bold tracking-wider border border-emerald-500/30 px-2 py-0.5 rounded hover:bg-emerald-500/10 transition">
+                                [ Follow ]
+                            </button>
+                        </form>
+                    @endif
+                @endif
+            </div>
 
-                    <p class="text-sm text-gray-200 leading-relaxed">
-                        {{ $post->content }}
-                    </p>
-
-                    <span class="text-[10px] text-gray-600">
-                        {{ $post->created_at->diffForHumans() }}
-                    </span>
-                </div>
-            @endforeach
+            @if(auth()->id() === $post->user_id)
+                <form action="/post/{{ $post->id }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                        class="text-gray-600 hover:text-red-500 transition text-[10px] uppercase font-bold">
+                        [ DELETE ]
+                    </button>
+                </form>
+            @endif
         </div>
+
+        <p class="text-sm text-gray-200 leading-relaxed">
+            {{ $post->content }}
+        </p>
+
+        <span class="text-[10px] text-gray-600">
+            {{ $post->created_at->diffForHumans() }}
+        </span>
+    </div>
+@endforeach
     @endauth
-<div class="flex items-center gap-3">
-    <!-- 1. The User Name -->
-    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-        // {{ optional($post->user)->name ?? 'Unknown' }}
-    </span>
-
-    <!-- 2. The Follow/Unfollow Logic -->
-    @if(auth()->id() !== $post->user_id) <!-- Don't show button for yourself -->
-        
-        @if(auth()->user()->isFollowing($post->user))
-            <!-- UNFOLLOW BUTTON -->
-            <form action="/unfollow/{{ $post->user->id }}" method="POST">
-                @csrf
-                <button type="submit" class="text-[10px] text-red-400 hover:text-red-300 uppercase font-bold tracking-wider border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/10 transition">
-                    [ Unfollow ]
-                </button>
-            </form>
-        @else
-            <!-- FOLLOW BUTTON -->
-            <form action="/follow/{{ $post->user->id }}" method="POST">
-                @csrf
-                <button type="submit" class="text-[10px] text-emerald-400 hover:text-emerald-300 uppercase font-bold tracking-wider border border-emerald-500/30 px-2 py-0.5 rounded hover:bg-emerald-500/10 transition">
-                    [ Follow ]
-                </button>
-            </form>
-        @endif
-
-    @endif
-</div>
     <!-- GUEST PANEL -->
     @guest
         <div class="glass z-10 p-10 rounded-2xl w-[450px] text-center shadow-2xl relative">
